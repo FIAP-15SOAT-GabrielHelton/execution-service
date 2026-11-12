@@ -1,0 +1,39 @@
+# frozen_string_literal: true
+
+require_relative "../shared/result"
+require_relative "../shared/use_case"
+
+module Executions
+  # Aplica uma ação do mecânico à execução e publica o evento da Saga correspondente.
+  class AdvanceExecution < Shared::UseCase
+    EVENTS = { start: "execution.started", complete: "execution.completed" }.freeze
+
+    def initialize(execution_repository:, publisher:, clock: Time.method(:now))
+      @repository = execution_repository
+      @publisher = publisher
+      @clock = clock
+    end
+
+    private
+
+    def perform(work_order_id:, action:, line_item_id: nil)
+      execution = @repository.find(work_order_id)
+      return Shared::Result.failure("Execution not found") unless execution
+
+      execution.public_send(action, *[ line_item_id, @clock.call ].compact)
+
+      # Publica antes de gravar: se o broker falhar, nada muda e o mecânico pode
+      # tentar de novo, em vez de a OS nunca ficar sabendo da mudança.
+      publish(action, execution)
+      Shared::Result.success(@repository.save(execution))
+    end
+
+    def publish(action, execution)
+      event = EVENTS[action]
+      return unless event
+
+      @publisher.publish(event, { work_order_id: execution.work_order_id,
+                                  duration_minutes: execution.duration_minutes }.compact)
+    end
+  end
+end
