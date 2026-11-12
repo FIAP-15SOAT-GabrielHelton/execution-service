@@ -13,7 +13,7 @@ gem "mongoid", "~> 9.0"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 
 # JSON Web Token authentication
-gem "jwt", "~> 3.2"
+gem "jwt", "~> 3.3"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
