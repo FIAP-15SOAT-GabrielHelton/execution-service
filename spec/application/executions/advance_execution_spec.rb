@@ -38,7 +38,11 @@ RSpec.describe Executions::AdvanceExecution do
     result = use_case.call(work_order_id: 42, action: :complete)
 
     expect(result.value).to be_completed
-    expect(publisher).to have_received(:publish).with("execution.completed", { work_order_id: 42, duration_minutes: 0.0 })
+    expect(publisher).to have_received(:publish).with(
+      "execution.completed",
+      { work_order_id: 42, duration_minutes: 0.0,
+        items: [ { line_item_id: 1, started_at: "2026-11-12T10:00:00Z", finished_at: "2026-11-12T10:00:00Z" } ] }
+    )
   end
 
   it "fails for an unknown execution or an invalid transition" do

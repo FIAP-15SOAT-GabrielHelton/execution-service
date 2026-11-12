@@ -32,8 +32,18 @@ module Executions
       event = EVENTS[action]
       return unless event
 
-      @publisher.publish(event, { work_order_id: execution.work_order_id,
-                                  duration_minutes: execution.duration_minutes }.compact)
+      @publisher.publish(event, payload(action, execution))
+    end
+
+    def payload(action, execution)
+      return { work_order_id: execution.work_order_id } unless action == :complete
+
+      # O OS Service grava estes horários para o histórico e as métricas da OS.
+      { work_order_id: execution.work_order_id,
+        duration_minutes: execution.duration_minutes,
+        items: execution.items.map do |item|
+          { line_item_id: item.line_item_id, started_at: item.started_at.iso8601, finished_at: item.finished_at.iso8601 }
+        end }
     end
   end
 end
