@@ -6,13 +6,14 @@ require_relative "item"
 module Executions
   # Execução de uma OS aprovada. O id é o próprio work_order_id: uma execução por OS.
   class Execution < Shared::Entity
-    STATUSES = %i[queued in_progress completed].freeze
+    STATUSES = %i[queued in_progress completed failed].freeze
 
     class InvalidTransition < StandardError; end
 
-    attr_reader :protocol, :status, :items, :queued_at, :started_at, :completed_at
+    attr_reader :protocol, :status, :items, :queued_at, :started_at, :completed_at, :failure_reason
 
-    def initialize(id:, protocol:, items:, status: :queued, queued_at: nil, started_at: nil, completed_at: nil)
+    def initialize(id:, protocol:, items:, status: :queued, queued_at: nil, started_at: nil, completed_at: nil,
+                   failure_reason: nil)
       super(id: id)
       raise ArgumentError, "Invalid status: #{status}" unless STATUSES.include?(status.to_sym)
       raise ArgumentError, "Execution needs at least one service" if items.empty?
@@ -23,6 +24,7 @@ module Executions
       @queued_at = queued_at
       @started_at = started_at
       @completed_at = completed_at
+      @failure_reason = failure_reason
     end
 
     alias work_order_id id
@@ -52,6 +54,15 @@ module Executions
 
       @status = :completed
       @completed_at = now
+    end
+
+    # A execução não pôde ser feita: dispara a compensação da Saga na OS.
+    def fail_with(reason, _now)
+      raise InvalidTransition, "Reason is required" if reason.to_s.strip.empty?
+      raise InvalidTransition, "Execution is already #{status}" unless queued? || in_progress?
+
+      @status = :failed
+      @failure_reason = reason
     end
 
     def duration_minutes

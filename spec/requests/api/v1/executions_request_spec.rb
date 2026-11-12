@@ -57,6 +57,20 @@ RSpec.describe "Api::V1::Executions", type: :request do
     expect(publisher).to have_received(:publish).with("execution.completed", hash_including(work_order_id: 42))
   end
 
+  it "marks the execution as failed and publishes execution.failed" do
+    patch "/api/v1/executions/42/fail", params: { reason: "Elevador quebrado" }, headers: auth_headers, as: :json
+
+    expect(response.parsed_body).to include("status" => "failed", "failure_reason" => "Elevador quebrado")
+    expect(publisher).to have_received(:publish).with("execution.failed", { work_order_id: 42, reason: "Elevador quebrado" })
+  end
+
+  it "returns 422 when failing without a reason" do
+    patch "/api/v1/executions/42/fail", headers: auth_headers, as: :json
+
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(publisher).not_to have_received(:publish)
+  end
+
   it "returns 422 on an invalid transition" do
     patch "/api/v1/executions/42/complete", headers: auth_headers, as: :json
 

@@ -14,6 +14,7 @@ module Executions
           started_at: execution.started_at,
           completed_at: execution.completed_at,
           duration_minutes: execution.duration_minutes,
+          failure_reason: execution.failure_reason,
           items: execution.items.map do |item|
             { line_item_id: item.line_item_id, name: item.name,
               started_at: item.started_at, finished_at: item.finished_at }

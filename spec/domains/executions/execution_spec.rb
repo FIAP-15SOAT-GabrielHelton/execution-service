@@ -65,6 +65,19 @@ RSpec.describe Executions::Execution do
     expect { execution.finish_item(1, now) }.to raise_error(described_class::InvalidTransition, /already finished/)
   end
 
+  it "fails from the queue or while in progress, keeping the reason" do
+    execution.fail_with("Elevador quebrado", now)
+
+    expect(execution).to be_failed
+    expect(execution.failure_reason).to eq("Elevador quebrado")
+  end
+
+  it "does not fail without a reason or after it has ended" do
+    expect { execution.fail_with(" ", now) }.to raise_error(described_class::InvalidTransition, /Reason is required/)
+    execution.fail_with("x", now)
+    expect { execution.fail_with("y", now) }.to raise_error(described_class::InvalidTransition, /already failed/)
+  end
+
   it "does not complete with unfinished services or before starting" do
     expect { execution.complete(now) }.to raise_error(described_class::InvalidTransition, /not in progress/)
     execution.start(now)

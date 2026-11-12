@@ -45,6 +45,14 @@ RSpec.describe Executions::AdvanceExecution do
     )
   end
 
+  it "marks the execution as failed and publishes execution.failed with the reason" do
+    result = use_case.call(work_order_id: 42, action: :fail_with, reason: "Elevador quebrado")
+
+    expect(result.value).to be_failed
+    expect(repository.find(42).failure_reason).to eq("Elevador quebrado")
+    expect(publisher).to have_received(:publish).with("execution.failed", { work_order_id: 42, reason: "Elevador quebrado" })
+  end
+
   it "fails for an unknown execution or an invalid transition" do
     expect(use_case.call(work_order_id: 999, action: :start).error).to eq("Execution not found")
     expect(use_case.call(work_order_id: 42, action: :complete).error).to match(/not in progress/)
