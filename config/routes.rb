@@ -7,6 +7,7 @@ Rails.application.routes.draw do
         member do
           patch :start
           patch :complete
+          patch :fail, action: :mark_failed
           patch "items/:line_item_id/start", action: :start_item, as: :start_item
           patch "items/:line_item_id/finish", action: :finish_item, as: :finish_item
         end

@@ -15,6 +15,7 @@ module Persistence
       field :queued_at, type: Time
       field :started_at, type: Time
       field :completed_at, type: Time
+      field :failure_reason, type: String
 
       index({ status: 1, queued_at: 1 })
     end

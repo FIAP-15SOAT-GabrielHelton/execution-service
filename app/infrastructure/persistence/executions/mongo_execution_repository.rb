@@ -38,7 +38,8 @@ module Persistence
           items: document.items.map { |item| ::Executions::Item.new(**item.symbolize_keys) },
           queued_at: document.queued_at,
           started_at: document.started_at,
-          completed_at: document.completed_at
+          completed_at: document.completed_at,
+          failure_reason: document.failure_reason
         )
       end
 
@@ -50,7 +51,8 @@ module Persistence
           items: execution.items.map { |item| item_attributes(item) },
           queued_at: execution.queued_at,
           started_at: execution.started_at,
-          completed_at: execution.completed_at
+          completed_at: execution.completed_at,
+          failure_reason: execution.failure_reason
         }
       end
 

@@ -7,7 +7,7 @@ Extraído do monolito [`api`](https://github.com/FIAP-15SOAT-GabrielHelton/api) 
 
 - Coloca a OS na fila ao receber o evento `work_order.approved`.
 - Expõe a fila e o andamento da execução para os funcionários (`/api/v1/executions`).
-- Publica `execution.started` e `execution.completed` para os outros serviços.
+- Publica `execution.started`, `execution.completed` e `execution.failed` para os outros serviços.
 
 Banco próprio em **MongoDB**: um documento por OS, com os serviços embutidos.
 A comunicação com os outros serviços é só por eventos no RabbitMQ (exchange de tópico `oficina.events`).
@@ -22,6 +22,7 @@ A comunicação com os outros serviços é só por eventos no RabbitMQ (exchange
 | PATCH | `/api/v1/executions/:work_order_id/items/:line_item_id/start` | Inicia um serviço |
 | PATCH | `/api/v1/executions/:work_order_id/items/:line_item_id/finish` | Finaliza um serviço |
 | PATCH | `/api/v1/executions/:work_order_id/complete` | Conclui (todos os serviços finalizados) |
+| PATCH | `/api/v1/executions/:work_order_id/fail` | Marca como falha (`reason` obrigatório) e dispara a compensação da Saga |
 
 ## Executar localmente
 

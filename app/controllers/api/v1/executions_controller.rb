@@ -4,7 +4,8 @@ module Api
   module V1
     # Fila e andamento da execução — só funcionários (o token do cliente é recusado).
     class ExecutionsController < Api::V1::ApplicationController
-      ACTIONS = { "start" => :start, "complete" => :complete,
+      # mark_failed (e não "fail") para não sobrescrever Kernel#fail no controller.
+      ACTIONS = { "start" => :start, "complete" => :complete, "mark_failed" => :fail_with,
                   "start_item" => :start_item, "finish_item" => :finish_item }.freeze
 
       before_action :require_staff!
@@ -24,7 +25,8 @@ module Api
 
       def advance
         result = advance_execution.call(
-          work_order_id: params[:work_order_id], action: ACTIONS.fetch(action_name), line_item_id: params[:line_item_id]
+          work_order_id: params[:work_order_id], action: ACTIONS.fetch(action_name),
+          line_item_id: params[:line_item_id], reason: params[:reason]
         )
 
         if result.success?
