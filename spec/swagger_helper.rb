@@ -1,7 +1,5 @@
 require 'rails_helper'
 
-ActiveRecord::Base.connection.disconnect! if ActiveRecord::Base.connected?
-
 RSpec.configure do |config|
   # During swagger generation the rake task sets SWAGGER_GENERATION=1, which lifts
   # the openapi_spec exclusion set in rails_helper so rswag can discover all specs.
@@ -23,102 +21,37 @@ RSpec.configure do |config|
     'v1/swagger.json' => {
       openapi: '3.0.1',
       info: {
-        title: 'API V1',
+        title: 'Execution Service API',
         version: 'v1'
       },
       paths: {},
       components: {
         schemas: {
-          Customer: {
+          Execution: {
             type: :object,
             properties: {
-              id: { type: :integer },
-              name: { type: :string },
-              document: { type: :string },
-              email: { type: :string },
-              phone: { type: :string },
-              created_at: { type: :string, format: :date_time },
-              updated_at: { type: :string, format: :date_time }
-            },
-            required: %w[id name document email phone]
-          },
-          Vehicle: {
-            type: :object,
-            properties: {
-              id: { type: :integer },
-              customer_id: { type: :integer },
-              license_plate: { type: :string },
-              make: { type: :string },
-              model: { type: :string },
-              year: { type: :integer },
-              color: { type: :string },
-              status: { type: :string, enum: %w[active inactive] },
-              created_at: { type: :string, format: :date_time },
-              updated_at: { type: :string, format: :date_time }
-            },
-            required: %w[id customer_id license_plate make model year]
-          },
-          Service: {
-            type: :object,
-            properties: {
-              id: { type: :integer },
-              name: { type: :string },
-              description: { type: :string },
-              base_price: { type: :string },
-              estimated_duration_minutes: { type: :integer },
-              active: { type: :boolean },
-              created_at: { type: :string, format: :date_time },
-              updated_at: { type: :string, format: :date_time }
-            },
-            required: %w[id name base_price active]
-          },
-          InventoryItem: {
-            type: :object,
-            properties: {
-              id: { type: :integer },
-              name: { type: :string },
-              code: { type: :string },
-              quantity: { type: :integer },
-              minimum_quantity: { type: :integer },
-              unit_price: { type: :string },
-              below_minimum: { type: :boolean },
-              active: { type: :boolean },
-              created_at: { type: :string, format: :date_time },
-              updated_at: { type: :string, format: :date_time }
-            },
-            required: %w[id name code quantity unit_price active]
-          },
-          WorkOrder: {
-            type: :object,
-            properties: {
-              id: { type: :integer },
-              protocol: { type: :string },
-              customer_id: { type: :integer },
-              vehicle_id: { type: :integer },
-              mechanic_id: { type: :integer, nullable: true },
-              status: { type: :string, enum: %w[received diagnosing awaiting_approval approved in_progress completed delivered rejected] },
-              description: { type: :string },
-              created_at: { type: :string, format: :date_time },
-              updated_at: { type: :string, format: :date_time },
-              executed_at: { type: :string, format: :date_time, nullable: true },
-              completed_at: { type: :string, format: :date_time, nullable: true },
-              delivered_at: { type: :string, format: :date_time, nullable: true },
-              total_execution_time_minutes: { type: :number, nullable: true },
-              average_service_duration_minutes: { type: :number, nullable: true }
-            },
-            required: %w[id protocol customer_id vehicle_id status description]
-          },
-          Quote: {
-            type: :object,
-            properties: {
-              id: { type: :integer },
               work_order_id: { type: :integer },
-              total_price: { type: :string },
-              status: { type: :string, enum: %w[created sent approved rejected] },
-              created_at: { type: :string, format: :date_time },
-              updated_at: { type: :string, format: :date_time }
+              protocol: { type: :string },
+              status: { type: :string, enum: %w[queued in_progress completed failed] },
+              queued_at: { type: :string, format: :date_time },
+              started_at: { type: :string, format: :date_time, nullable: true },
+              completed_at: { type: :string, format: :date_time, nullable: true },
+              duration_minutes: { type: :integer, nullable: true },
+              failure_reason: { type: :string, nullable: true },
+              items: {
+                type: :array,
+                items: {
+                  type: :object,
+                  properties: {
+                    line_item_id: { type: :integer },
+                    name: { type: :string },
+                    started_at: { type: :string, format: :date_time, nullable: true },
+                    finished_at: { type: :string, format: :date_time, nullable: true }
+                  }
+                }
+              }
             },
-            required: %w[id work_order_id total_price status]
+            required: %w[work_order_id status items]
           },
           Error: {
             type: :object,
@@ -126,27 +59,12 @@ RSpec.configure do |config|
               error: { type: :string }
             },
             required: %w[error]
-          },
-          ValidationErrors: {
-            type: :object,
-            properties: {
-              errors: {
-                type: :object,
-                additionalProperties: { type: :array, items: { type: :string } }
-              }
-            },
-            required: %w[errors]
           }
         },
         securitySchemes: {
           bearerAuth: {
             type: :http,
             scheme: :bearer
-          },
-          webhookToken: {
-            type: :apiKey,
-            in: :header,
-            name: "X-Webhook-Token"
           }
         }
       },
