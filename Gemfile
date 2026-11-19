@@ -6,7 +6,7 @@ gem "rails", "~> 8.1.3"
 gem "puma", ">= 5.0"
 
 # Banco NoSQL deste serviço (RFC-005)
-gem "mongoid", "~> 9.0"
+gem "mongoid", "~> 9.1"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 # gem "jbuilder"
 

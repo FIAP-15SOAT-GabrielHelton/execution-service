@@ -96,7 +96,7 @@ GEM
       openssl (>= 3.3)
       sorted_set (~> 1, >= 1.0.2)
     concurrent-ruby (1.3.8)
-    connection_pool (3.0.2)
+    connection_pool (3.0.3)
     crass (1.0.8)
     date (3.6.0)
     debug (1.11.1)
@@ -150,7 +150,7 @@ GEM
     mongo (2.26.1)
       base64
       bson (>= 4.14.1, < 6.0.0)
-    mongoid (9.1.1)
+    mongoid (9.1.2)
       activemodel (>= 5.1, < 8.2, != 7.0.0)
       concurrent-ruby (>= 1.0.5, < 2.0)
       mongo (>= 2.18.0, < 3.0.0)
@@ -366,7 +366,7 @@ DEPENDENCIES
   faker
   jwt (~> 3.2)
   lograge
-  mongoid (~> 9.0)
+  mongoid (~> 9.1)
   newrelic_rpm
   ostruct
   puma (>= 5.0)
